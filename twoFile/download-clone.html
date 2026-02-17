@@ -135,9 +135,36 @@
             loading.classList.add('active');
             
             try {
-                // Загружаем содержимое clone.html из папки twoFile
-                const response = await fetch('clone.html');
+                // Загружаем содержимое clone.html из той же папки
+                // Определяем правильный путь в зависимости от текущего URL
+                const pagePath = window.location.pathname;
+                let clonePath;
+                
+                if (pagePath.includes('/twoFile/')) {
+                    // Если мы в папке twoFile, используем относительный путь
+                    clonePath = 'clone.html';
+                } else if (pagePath === '/' || pagePath.endsWith('/')) {
+                    // Если мы в корне (через rewrite на Vercel), используем полный путь
+                    clonePath = '/twoFile/clone.html';
+                } else {
+                    // В других случаях
+                    clonePath = 'twoFile/clone.html';
+                }
+                
+                console.log('Текущий путь:', pagePath);
+                console.log('Загрузка файла:', clonePath);
+                const response = await fetch(clonePath);
+                
+                if (!response.ok) {
+                    throw new Error(`Ошибка загрузки файла: ${response.status} ${response.statusText}`);
+                }
+                
                 let htmlContent = await response.text();
+                console.log('Файл загружен, размер:', htmlContent.length);
+                
+                if (!htmlContent || htmlContent.length < 100) {
+                    throw new Error('Загруженный файл пуст или слишком мал');
+                }
                 
                 // Создаем временный элемент для конвертации (как в рабочем download.html)
                 const tempDiv = document.createElement('div');
@@ -148,8 +175,23 @@
                 tempDiv.style.background = 'white'; // Белый фон для PDF
                 document.body.appendChild(tempDiv);
                 
+                // Проверяем, что контент загрузился
+                if (!tempDiv.innerHTML || tempDiv.children.length === 0) {
+                    throw new Error('Не удалось загрузить содержимое HTML');
+                }
+                
+                console.log('Контент загружен, элементов:', tempDiv.children.length);
+                
                 // Находим основной контент для конвертации
                 const element = tempDiv.querySelector('main.container') || tempDiv.querySelector('main') || tempDiv;
+                
+                if (!element || (element === tempDiv && tempDiv.children.length === 0)) {
+                    console.error('Основной контент не найден!');
+                    console.error('Дочерние элементы tempDiv:', Array.from(tempDiv.children).map(el => el.tagName));
+                    throw new Error('Не удалось найти основной контент для конвертации');
+                }
+                
+                console.log('Основной элемент найден:', element.tagName, element.className);
                 
                 // Уменьшаем размер логотипа перед конвертацией
                 const logoImg = element.querySelector('.logo-img');
@@ -160,36 +202,81 @@
                     logoImg.style.objectFit = 'contain';
                 }
                 
-                // Исправляем пути к изображениям
+                // Исправляем пути к изображениям для работы на Vercel
                 const images = element.querySelectorAll('img');
-                const currentPath = window.location.href;
-                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
-                const parentPath = basePath.substring(0, basePath.lastIndexOf('/'));
+                console.log('Найдено изображений:', images.length);
                 
-                images.forEach(img => {
+                // Получаем базовый URL для правильных путей
+                const currentUrl = new URL(window.location.href);
+                const baseUrl = currentUrl.origin;
+                const currentPath = currentUrl.pathname;
+                
+                // Определяем базовый путь к файлам
+                let assetsBasePath;
+                if (currentPath.includes('/twoFile/')) {
+                    // Если мы в папке twoFile, родительская папка - корень
+                    assetsBasePath = baseUrl;
+                } else if (currentPath === '/' || currentPath.endsWith('/')) {
+                    // Если мы в корне (через rewrite на Vercel), используем корень
+                    assetsBasePath = baseUrl;
+                } else {
+                    // В других случаях
+                    assetsBasePath = baseUrl + currentPath.replace(/\/[^/]*$/, '');
+                }
+                
+                console.log('Базовый путь для изображений:', assetsBasePath);
+                
+                images.forEach((img, index) => {
                     const src = img.getAttribute('src');
                     if (src) {
+                        let newSrc = src;
                         if (src.startsWith('../')) {
-                            // Путь к родительской папке
-                            img.src = parentPath + '/' + src.replace('../', '');
+                            // Путь к родительской папке - заменяем на абсолютный путь
+                            newSrc = assetsBasePath + '/' + src.replace('../', '');
+                        } else if (src.startsWith('./')) {
+                            // Относительный путь в текущей папке
+                            newSrc = assetsBasePath + '/twoFile/' + src.replace('./', '');
                         } else if (!src.startsWith('http://') && !src.startsWith('https://') && !src.startsWith('data:') && !src.startsWith('/')) {
-                            // Относительный путь
-                            img.src = basePath + '/' + src;
+                            // Относительный путь без префикса
+                            if (currentPath.includes('/twoFile/')) {
+                                newSrc = assetsBasePath + '/' + src;
+                            } else {
+                                newSrc = assetsBasePath + '/twoFile/' + src;
+                            }
                         }
+                        img.src = newSrc;
+                        console.log(`Изображение ${index + 1}: ${src} -> ${newSrc}`);
                     }
                 });
                 
                 // Ждем полной загрузки изображений
+                console.log('Ожидание загрузки изображений...');
                 await new Promise(resolve => setTimeout(resolve, 500));
                 
-                await Promise.all(Array.from(images).map(img => {
-                    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+                await Promise.all(Array.from(images).map((img, index) => {
+                    if (img.complete && img.naturalWidth > 0) {
+                        console.log(`Изображение ${index + 1} уже загружено`);
+                        return Promise.resolve();
+                    }
                     return new Promise((resolve) => {
-                        img.onload = resolve;
-                        img.onerror = resolve;
-                        setTimeout(resolve, 2000);
+                        img.onload = () => {
+                            console.log(`Изображение ${index + 1} загружено`);
+                            resolve();
+                        };
+                        img.onerror = () => {
+                            console.warn(`Ошибка загрузки изображения ${index + 1}:`, img.src);
+                            resolve();
+                        };
+                        setTimeout(() => {
+                            console.warn(`Таймаут загрузки изображения ${index + 1}`);
+                            resolve();
+                        }, 2000);
                     });
                 }));
+                
+                console.log('Все изображения обработаны, начинаем генерацию PDF...');
+                console.log('Элемент для конвертации:', element.tagName, element.className);
+                console.log('Дочерние элементы:', element.children.length);
                 
                 // Настройки для html2pdf
                 const opt = {
@@ -360,14 +447,25 @@
                 };
                 
                 // Конвертируем в PDF
+                console.log('Запуск html2pdf...');
                 await html2pdf().set(opt).from(element).save();
+                console.log('PDF успешно создан!');
                 
                 // Удаляем временный элемент
-                document.body.removeChild(tempDiv);
+                if (tempDiv && tempDiv.parentNode) {
+                    document.body.removeChild(tempDiv);
+                }
                 
             } catch (error) {
                 console.error('Ошибка при генерации PDF:', error);
-                alert('Произошла ошибка при генерации PDF. Попробуйте еще раз.');
+                console.error('Стек ошибки:', error.stack);
+                console.error('URL:', window.location.href);
+                
+                let errorMessage = 'Произошла ошибка при генерации PDF.\n\n';
+                errorMessage += 'Ошибка: ' + error.message + '\n\n';
+                errorMessage += 'Откройте консоль браузера (F12) для подробностей.';
+                
+                alert(errorMessage);
             } finally {
                 btn.disabled = false;
                 loading.classList.remove('active');
