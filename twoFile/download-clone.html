@@ -193,12 +193,12 @@
                 
                 console.log('Основной элемент найден:', element.tagName, element.className);
                 
-                // Уменьшаем размер логотипа перед конвертацией
+                // Устанавливаем размер логотипа перед конвертацией
                 const logoImg = element.querySelector('.logo-img');
                 if (logoImg) {
-                    logoImg.style.height = '35px';
+                    logoImg.style.height = '45px';
                     logoImg.style.width = 'auto';
-                    logoImg.style.maxWidth = '120px';
+                    logoImg.style.maxWidth = '150px';
                     logoImg.style.objectFit = 'contain';
                 }
                 
@@ -411,6 +411,96 @@
                             var toast = clonedDoc.querySelector('#toast');
                             if (toast) toast.style.display = 'none';
 
+                            // Обрабатываем таблицы для правильного переноса текста
+                            var tables = clonedDoc.querySelectorAll('table');
+                            tables.forEach(function(table) {
+                                // Убеждаемся, что таблица правильно отображается
+                                table.style.width = '100%';
+                                table.style.tableLayout = 'auto';
+                                table.style.borderCollapse = 'collapse';
+                                
+                                // Устанавливаем ширину столбцов
+                                var headers = table.querySelectorAll('thead th');
+                                headers.forEach(function(header, index) {
+                                    if (header.textContent.includes('Сумма') || header.style.textAlign === 'right') {
+                                        // Столбец с суммой - фиксированная ширина
+                                        header.style.width = 'auto';
+                                        header.style.minWidth = '100px';
+                                    } else {
+                                        // Столбец с услугами - занимает оставшееся пространство
+                                        header.style.width = '60%';
+                                    }
+                                });
+                                
+                                // Обрабатываем ячейки таблицы
+                                var cells = table.querySelectorAll('td');
+                                cells.forEach(function(cell) {
+                                    // Если это ячейка с суммой, выравниваем по правому краю
+                                    if (cell.classList.contains('col-price')) {
+                                        cell.style.textAlign = 'right';
+                                        cell.style.whiteSpace = 'nowrap';
+                                        cell.style.fontWeight = '600';
+                                    } else {
+                                        cell.style.textAlign = 'left';
+                                    }
+                                    cell.style.wordWrap = 'break-word';
+                                    cell.style.wordBreak = 'break-word';
+                                    cell.style.overflowWrap = 'break-word';
+                                    cell.style.padding = '8px 6px';
+                                    cell.style.verticalAlign = 'top';
+                                });
+                                
+                                // Убеждаемся, что заголовок столбца суммы тоже выровнен по правому краю
+                                var priceHeaders = table.querySelectorAll('th');
+                                priceHeaders.forEach(function(header) {
+                                    if (header.textContent.includes('Сумма') || header.style.textAlign === 'right') {
+                                        header.style.textAlign = 'right';
+                                    }
+                                });
+                                
+                                // Обрабатываем ячейки с адресом и описанием
+                                var serviceAddresses = table.querySelectorAll('.service-address');
+                                serviceAddresses.forEach(function(address) {
+                                    address.style.display = 'block';
+                                    address.style.textAlign = 'left';
+                                    address.style.paddingLeft = '0';
+                                    address.style.marginLeft = '0';
+                                    address.style.textIndent = '0';
+                                    address.style.wordWrap = 'break-word';
+                                    address.style.wordBreak = 'break-word';
+                                });
+                                
+                                // Обрабатываем описания услуг для правильного переноса
+                                var serviceDescs = table.querySelectorAll('.service-desc');
+                                serviceDescs.forEach(function(desc) {
+                                    desc.style.display = 'block';
+                                    desc.style.textAlign = 'left';
+                                    desc.style.paddingLeft = '0';
+                                    desc.style.marginLeft = '0';
+                                    desc.style.textIndent = '0';
+                                    desc.style.wordWrap = 'break-word';
+                                    desc.style.wordBreak = 'break-word';
+                                    desc.style.overflowWrap = 'break-word';
+                                    desc.style.whiteSpace = 'normal';
+                                    desc.style.lineHeight = '1.3';
+                                });
+                                
+                                // Обрабатываем строку с итогом
+                                var rows = table.querySelectorAll('tbody tr');
+                                rows.forEach(function(row) {
+                                    var firstCell = row.querySelector('td:first-child');
+                                    var lastCell = row.querySelector('td:last-child');
+                                    if (firstCell && firstCell.textContent.includes('ИТОГО')) {
+                                        // Строка с итогом
+                                        if (lastCell) {
+                                            lastCell.style.textAlign = 'right';
+                                            lastCell.style.fontWeight = '700';
+                                            lastCell.style.whiteSpace = 'nowrap';
+                                        }
+                                    }
+                                });
+                            });
+
                             // Убеждаемся, что ссылка видна
                             var link = clonedDoc.querySelector('a[href*="external-payment"]');
                             if (link) {
@@ -431,12 +521,12 @@
                                 }
                             });
 
-                            // Уменьшаем размер логотипа в PDF
+                            // Устанавливаем размер логотипа в PDF
                             var logoImg = clonedDoc.querySelector('.logo-img');
                             if (logoImg) {
-                                logoImg.style.height = '35px';
+                                logoImg.style.height = '45px';
                                 logoImg.style.width = 'auto';
-                                logoImg.style.maxWidth = '120px';
+                                logoImg.style.maxWidth = '150px';
                                 logoImg.style.objectFit = 'contain';
                                 logoImg.style.display = 'block';
                             }
