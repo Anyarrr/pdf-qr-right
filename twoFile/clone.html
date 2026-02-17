@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оплата счета № СЧ-2026-00003 | Артель "МИК"</title>
+    <style>
+        /* --- CSS Variables & Reset --- */
+        :root {
+            --primary-color: #0066cc; /* Фирменный синий */
+            --primary-hover: #0052a3;
+            --accent-color: #eef4ff;
+            --text-main: #1a1a1a;
+            --text-secondary: #666666;
+            --bg-body: #f4f6f8;
+            --bg-card: #ffffff;
+            --border-color: #e0e0e0;
+            --success-color: #28a745;
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+            --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            padding-bottom: 40px;
+        }
+
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        /* --- Layout --- */
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 0 15px;
+        }
+
+        /* --- Document Header (в основном контенте) --- */
+        .doc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-img {
+            height: 50px;
+            width: auto;
+            max-width: 180px;
+            object-fit: contain;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--primary-color);
+            color: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .doc-badge {
+            background: var(--accent-color);
+            color: var(--primary-color);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* --- Main Grid --- */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* --- Cards --- */
+        .card {
+            background: var(--bg-card);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            margin-bottom: 16px;
+        }
+
+        .card-header {
+            margin-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 3px;
+        }
+
+        .card-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* --- Invoice Summary Section --- */
+        .invoice-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            margin-bottom: 12px;
+        }
+
+        .info-column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .info-column-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            padding: 4px 8px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            display: inline-block;
+        }
+
+        .info-column-content {
+            font-size: 0.8rem;
+            color: var(--text-main);
+            line-height: 1.6;
+        }
+
+        .info-column-content p {
+            margin-bottom: 4px;
+        }
+
+        .info-column-content strong {
+            font-weight: 600;
+        }
+
+        /* Табличный вид для плательщика */
+        .payer-table {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 8px 15px;
+            font-size: 0.8rem;
+        }
+
+        .payer-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .payer-value {
+            color: var(--text-main);
+            font-weight: 500;
+        }
+
+        .meta-item label {
+            display: block;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-bottom: 2px;
+        }
+
+        .meta-item span {
+            font-weight: 500;
+            font-size: 0.8rem;
+        }
+
+        .total-block {
+            background: var(--accent-color);
+            border-radius: var(--radius-sm);
+            padding: 12px;
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        .total-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 3px;
+        }
+
+        .total-amount {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .due-date {
+            font-size: 0.85rem;
+            color: #d32f2f;
+            margin-top: 5px;
+        }
+
+        /* --- Services Table --- */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+
+        th {
+            text-align: left;
+            padding: 8px 6px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            border-bottom: 2px solid var(--border-color);
+            background: #fafafa;
+            font-size: 0.65rem;
+        }
+
+        td {
+            padding: 8px 6px;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: top;
+            font-size: 0.75rem;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .service-address {
+            font-weight: 500;
+            color: var(--text-main);
+            margin-bottom: 3px;
+            display: block;
+            font-size: 0.7rem;
+        }
+
+        .service-desc {
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            line-height: 1.3;
+            display: block;
+        }
+
+        .col-price {
+            text-align: right;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+
+        /* --- Payment Action Card --- */
+        .pay-card {
+            position: sticky;
+            top: 20px;
+        }
+
+        .btn-pay {
+            display: block;
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary-color), #004080);
+            color: white;
+            text-align: center;
+            padding: 12px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 12px;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn-pay:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 102, 204, 0.3);
+        }
+
+        .qr-placeholder {
+            background: white;
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-sm);
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+            color: var(--text-secondary);
+        }
+
+        .qr-img {
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            margin-bottom: 8px;
+        }
+
+        /* --- Bank Details --- */
+        .bank-details-box {
+            background: #fafafa;
+            padding: 10px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+        }
+
+        .bank-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            padding-bottom: 5px;
+            border-bottom: 1px dashed #e0e0e0;
+        }
+
+        .bank-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .bank-label {
+            color: var(--text-secondary);
+        }
+
+        .bank-value {
+            font-family: "Courier New", monospace;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        .copy-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 0.75rem;
+            margin-left: 5px;
+            text-decoration: underline;
+        }
+
+        /* --- Footer --- */
+        footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        /* --- Toast Notification --- */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 12px;
+            position: fixed;
+            z-index: 1000;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Content -->
+    <main class="container">
+        
+        <!-- Document Header -->
+        <div class="doc-header">
+            <div class="logo">
+                <img src="../ARTELMIKlogo.png" alt="АРТЕЛЬ МиК" class="logo-img">
+            </div>
+            <div class="doc-badge">Счет № СЧ-2026-00003</div>
+        </div>
+        
+        <!-- Payer & Dates Info (на всю ширину) -->
+        <section class="card" style="margin-bottom: 16px;">
+            <div class="invoice-meta">
+                <!-- Получатель -->
+                <div class="info-column">
+                    <div class="info-column-title">Получатель</div>
+                    <div class="info-column-content">
+                        <p><strong>Артель "МИК"</strong></p>
+                        <p>Таганрог, ул Большая Бульварная 11</p>
+                        <p>ИНН 6154168572 / КПП 615401001</p>
+                        <p>Р/с 40702810610002027590</p>
+                        <p>АО "ТБанк"</p>
+                        <p>БИК 044525974</p>
+                    </div>
+                </div>
+                
+                <!-- Плательщик -->
+                <div class="info-column">
+                    <div class="info-column-title">Плательщик</div>
+                    <div class="payer-table">
+                        <span class="payer-label">ФИО:</span>
+                        <span class="payer-value">Иванов Иван Иванович</span>
+                        <span class="payer-label">Договор:</span>
+                        <span class="payer-value">№101533</span>
+                        <span class="payer-label">Дата формирования:</span>
+                        <span class="payer-value">19 декабря 2025 г.</span>
+                        <span class="payer-label">Срок оплаты до:</span>
+                        <span class="payer-value">29 декабря 2025 г.</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <div class="main-grid">
+            <!-- Left Column: Services -->
+            <div class="content-left">
+                
+                <!-- Services Table -->
+                <section class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Состав услуг</h2>
+                        <p class="card-subtitle">Период оплаты: Декабрь 2025</p>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th style="width: 60%;">Услуга / Адрес</th>
+                                    <th style="text-align: right;">Сумма</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Item 1 -->
+                                <tr>
+                                    <td>
+                                        <span class="service-address">г. Таганрог, ул. Ломоносова, д. 47</span>
+                                        <span class="service-desc">Ежемесячная плата за аренду участка сети передачи данных (СПД)</span>
+                                    </td>
+                                    <td class="col-price">399.00 ₽</td>
+                                </tr>
+                                <!-- Item 2 -->
+                                <tr>
+                                    <td>
+                                        <span class="service-address">г. Таганрог, ул. Ломоносова, д. 47</span>
+                                        <span class="service-desc">Ежемесячный пакет "Режим работы порта доступа ЛС АМИК - Профиль ИНТЕРНЕТ ПЖ19"</span>
+                                    </td>
+                                    <td class="col-price">300.00 ₽</td>
+                                </tr>
+                                <!-- Item 3 -->
+                                <tr>
+                                    <td>
+                                        <span class="service-address">г. Таганрог, пер. Каркасный, д. 9, кв. 16</span>
+                                        <span class="service-desc">Ежемесячная плата за аренду участка сети передачи данных (СПД)</span>
+                                    </td>
+                                    <td class="col-price">399.00 ₽</td>
+                                </tr>
+                                <!-- Item 4 -->
+                                <tr>
+                                    <td>
+                                        <span class="service-address">г. Таганрог, пер. Каркасный, д. 9, кв. 16</span>
+                                        <span class="service-desc">Ежемесячный пакет "Режим работы порта доступа ЛС АМИК - Профиль ИНТЕРНЕТ ПЖ19"</span>
+                                    </td>
+                                    <td class="col-price">300.00 ₽</td>
+                                </tr>
+                                <!-- Item 5 -->
+                                <tr>
+                                    <td>
+                                        <span class="service-address">г. Таганрог, ул. 1-я Котельная, д. 45</span>
+                                        <span class="service-desc">Пользование оборудованием ПЖ-19, за 1 месяц</span>
+                                    </td>
+                                    <td class="col-price">0.00 ₽</td>
+                                </tr>
+                                <!-- Item 6 -->
+                                <tr>
+                                    <td>
+                                        <span class="service-address">г. Таганрог, ул. 1-я Котельная, д. 45</span>
+                                        <span class="service-desc">Видеонаблюдение 1, за 1 месяц</span>
+                                    </td>
+                                    <td class="col-price">299.00 ₽</td>
+                                </tr>
+                                <!-- Item 7 -->
+                                <tr>
+                                    <td>
+                                        <span class="service-address">г. Таганрог, ул. 1-я Котельная, д. 45</span>
+                                        <span class="service-desc">Ежемесячная плата за аренду участка сети передачи данных (СПД)</span>
+                                    </td>
+                                    <td class="col-price">399.00 ₽</td>
+                                </tr>
+                                <!-- Item 8 -->
+                                <tr>
+                                    <td>
+                                        <span class="service-address">г. Таганрог, ул. 1-я Котельная, д. 45</span>
+                                        <span class="service-desc">Ежемесячный пакет "Режим работы порта доступа ЛС АМИК - Профиль ИНТЕРНЕТ ПЖ19"</span>
+                                    </td>
+                                    <td class="col-price">300.00 ₽</td>
+                                </tr>
+                                <!-- Item 9 -->
+                                <tr>
+                                    <td>
+                                        <span class="service-address">г. Таганрог, пер. 14-й Новый, д. 74</span>
+                                        <span class="service-desc">Пользование оборудованием ПЖ-19, за 1 месяц</span>
+                                    </td>
+                                    <td class="col-price">0.00 ₽</td>
+                                </tr>
+                                <!-- Item 10 -->
+                                <tr>
+                                    <td>
+                                        <span class="service-address">г. Таганрог, пер. 14-й Новый, д. 74</span>
+                                        <span class="service-desc">Ежемесячная плата за аренду участка сети передачи данных (СПД)</span>
+                                    </td>
+                                    <td class="col-price">399.00 ₽</td>
+                                </tr>
+                                <!-- Item 11 -->
+                                <tr>
+                                    <td>
+                                        <span class="service-address">г. Таганрог, пер. 14-й Новый, д. 74</span>
+                                        <span class="service-desc">Ежемесячный пакет "Режим работы порта доступа ЛС АМИК - Профиль ИНТЕРНЕТ ПЖ19"</span>
+                                    </td>
+                                    <td class="col-price">300.00 ₽</td>
+                                </tr>
+                                
+                                <!-- Total Row -->
+                                <tr style="background-color: #f9f9f9;">
+                                    <td style="font-weight: 700; padding-top: 20px; padding-bottom: 20px;">ИТОГО:</td>
+                                    <td class="col-price" style="font-size: 1.2rem; color: var(--primary-color); padding-top: 20px; padding-bottom: 20px;">3 095.00 ₽</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column: Payment Actions -->
+            <div class="content-right">
+                <div class="card pay-card">
+                    <div class="card-header">
+                        <h2 class="card-title">Оплата счета</h2>
+                        <p class="card-subtitle">Срок оплаты до: 29 декабря 2025 г.</p>
+                    </div>
+
+                    <a href="https://artelmik.ru/external-payment.html?contract=101533" target="_blank" class="btn-pay">
+                        Оплатить онлайн
+                    </a>
+
+                    <div class="qr-placeholder">
+                        <img src="../photo_2026-02-13_12-26-36.jpg" alt="QR Code для оплаты" class="qr-img">
+                        <span style="font-size: 0.8rem;">Сканируйте камерой банковского приложения</span>
+                    </div>
+
+                    <div style="text-align: center; margin-bottom: 15px; font-size: 0.9rem; color: var(--text-secondary);">
+                        — или через банковский перевод —
+                    </div>
+
+                    <div class="bank-details-box">
+                        <div class="bank-row">
+                            <span class="bank-label">Получатель:</span>
+                            <span class="bank-value">Артель "МИК"</span>
+                        </div>
+                        <div class="bank-row">
+                            <span class="bank-label">ИНН / КПП:</span>
+                            <span class="bank-value">6154168572 / 615401001</span>
+                        </div>
+                        <div class="bank-row">
+                            <span class="bank-label">Банк:</span>
+                            <span class="bank-value">АО "ТБанк"</span>
+                        </div>
+                        <div class="bank-row">
+                            <span class="bank-label">БИК:</span>
+                            <span class="bank-value">044525974</span>
+                        </div>
+                        <div class="bank-row">
+                            <span class="bank-label">Р/С:</span>
+                            <span class="bank-value">40702810610002027590</span>
+                        </div>
+                        <div class="bank-row" style="display: block;">
+                            <span class="bank-label">Назначение платежа:</span>
+                            <div style="margin-top: 5px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                                <span class="bank-value" style="text-align: left; font-size: 0.75rem; word-break: break-all;">Оплата по договору №101533, счет СЧ-2026-00003</span>
+                                <button class="copy-btn" onclick="copyText(this)">Коп.</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>© 2025 Артель "МИК", г. Таганрог</p>
+            <p>Если у вас возникли вопросы по счету, свяжитесь с техподдержкой.</p>
+        </div>
+    </footer>
+
+    <!-- Toast Message -->
+    <div id="toast">Текст скопирован в буфер обмена</div>
+
+    <script>
+        // Simple script to handle "Copy to clipboard" functionality
+        function copyText(button) {
+            // Find the text element previous to the button
+            const textToCopy = button.previousElementSibling.innerText;
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast();
+            }).catch(err => {
+                console.error('Ошибка копирования: ', err);
+                // Fallback for older browsers or if permission denied
+                const textArea = document.createElement("textarea");
+                textArea.value = textToCopy;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand("Copy");
+                textArea.remove();
+                showToast();
+            });
+        }
+
+        function showToast() {
+            const toast = document.getElementById("toast");
+            toast.className = "show";
+            setTimeout(function(){ 
+                toast.className = toast.className.replace("show", ""); 
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

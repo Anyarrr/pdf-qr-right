@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Скачать квитанцию</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .description {
+            color: #666;
+            margin-bottom: 40px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
+        }
+
+        .download-btn:active {
+            transform: translateY(0);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .icon {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        .loading {
+            display: none;
+            margin-top: 20px;
+            color: #667eea;
+            font-size: 14px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 40px 20px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .download-btn {
+                padding: 15px 30px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Квитанция на оплату</h1>
+        <p class="description">
+            Нажмите на кнопку ниже, чтобы скачать документ по операции в формате PDF
+        </p>
+        <button class="download-btn" id="downloadBtn" onclick="downloadPDF()">
+            <svg class="icon" viewBox="0 0 24 24">
+                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+            </svg>
+            Скачать документ по операции PDF
+        </button>
+        <div class="loading" id="loading">Генерация PDF...</div>
+    </div>
+
+    <script>
+        async function downloadPDF() {
+            const btn = document.getElementById('downloadBtn');
+            const loading = document.getElementById('loading');
+            
+            btn.disabled = true;
+            loading.classList.add('active');
+            
+            try {
+                // Загружаем содержимое clone.html из папки twoFile
+                const response = await fetch('clone.html');
+                let htmlContent = await response.text();
+                
+                // Создаем временный элемент для конвертации (как в рабочем download.html)
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlContent;
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.left = '-9999px';
+                tempDiv.style.width = '700px';
+                tempDiv.style.background = 'white'; // Белый фон для PDF
+                document.body.appendChild(tempDiv);
+                
+                // Находим основной контент для конвертации
+                const element = tempDiv.querySelector('main.container') || tempDiv.querySelector('main') || tempDiv;
+                
+                // Уменьшаем размер логотипа перед конвертацией
+                const logoImg = element.querySelector('.logo-img');
+                if (logoImg) {
+                    logoImg.style.height = '35px';
+                    logoImg.style.width = 'auto';
+                    logoImg.style.maxWidth = '120px';
+                    logoImg.style.objectFit = 'contain';
+                }
+                
+                // Исправляем пути к изображениям
+                const images = element.querySelectorAll('img');
+                const currentPath = window.location.href;
+                const basePath = currentPath.substring(0, currentPath.lastIndexOf('/'));
+                const parentPath = basePath.substring(0, basePath.lastIndexOf('/'));
+                
+                images.forEach(img => {
+                    const src = img.getAttribute('src');
+                    if (src) {
+                        if (src.startsWith('../')) {
+                            // Путь к родительской папке
+                            img.src = parentPath + '/' + src.replace('../', '');
+                        } else if (!src.startsWith('http://') && !src.startsWith('https://') && !src.startsWith('data:') && !src.startsWith('/')) {
+                            // Относительный путь
+                            img.src = basePath + '/' + src;
+                        }
+                    }
+                });
+                
+                // Ждем полной загрузки изображений
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                await Promise.all(Array.from(images).map(img => {
+                    if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+                    return new Promise((resolve) => {
+                        img.onload = resolve;
+                        img.onerror = resolve;
+                        setTimeout(resolve, 2000);
+                    });
+                }));
+                
+                // Настройки для html2pdf
+                const opt = {
+                    margin: [8, 6, 8, 6],
+                    filename: 'квитанция_на_оплату.pdf',
+                    image: { type: 'jpeg', quality: 0.98 },
+                    html2canvas: {
+                        scale: 1.2,
+                        useCORS: true,
+                        allowTaint: true,
+                        letterRendering: true,
+                        logging: false,
+                        scrollY: 0,
+                        scrollX: 0,
+                        backgroundColor: '#ffffff',
+                        onclone: function (clonedDoc) {
+                            // Минимальные изменения для правильного отображения в PDF
+                            var rootEl = clonedDoc.body || clonedDoc.documentElement;
+                            rootEl.style.background = 'white';
+                            rootEl.style.padding = '0';
+                            rootEl.style.margin = '0';
+
+                            // Убираем только тени для лучшего отображения в PDF, сохраняем остальные стили
+                            var mainContent = clonedDoc.querySelector('main.container') || clonedDoc.querySelector('main');
+                            if (mainContent) {
+                                mainContent.style.boxShadow = 'none';
+                                mainContent.style.maxWidth = 'none';
+                                mainContent.style.width = '100%';
+                                // Сохраняем оригинальные padding и margin
+                            }
+                            
+                            // Убираем тени у карточек и убеждаемся, что они видны
+                            var cards = clonedDoc.querySelectorAll('.card');
+                            cards.forEach(function(card) {
+                                card.style.boxShadow = 'none';
+                                card.style.visibility = 'visible';
+                                card.style.opacity = '1';
+                                card.style.display = 'block';
+                            });
+                            
+                            // Убеждаемся, что секция получателя и плательщика правильно отображается
+                            var invoiceMeta = clonedDoc.querySelector('.invoice-meta');
+                            if (invoiceMeta) {
+                                invoiceMeta.style.display = 'grid';
+                                invoiceMeta.style.gridTemplateColumns = 'repeat(2, 1fr)';
+                                invoiceMeta.style.gap = '40px';
+                                invoiceMeta.style.marginBottom = '12px';
+                                invoiceMeta.style.visibility = 'visible';
+                                invoiceMeta.style.opacity = '1';
+                            }
+                            
+                            // Убеждаемся, что колонки информации правильно отображаются
+                            var infoColumns = clonedDoc.querySelectorAll('.info-column');
+                            infoColumns.forEach(function(column) {
+                                column.style.display = 'flex';
+                                column.style.flexDirection = 'column';
+                                column.style.visibility = 'visible';
+                                column.style.opacity = '1';
+                                column.style.textAlign = 'left';
+                                column.style.alignItems = 'flex-start'; // Выравнивание по левому краю
+                                column.style.paddingLeft = '0';
+                                column.style.marginLeft = '0';
+                            });
+                            
+                            // Убеждаемся, что заголовки колонок видны
+                            var infoColumnTitles = clonedDoc.querySelectorAll('.info-column-title');
+                            infoColumnTitles.forEach(function(title) {
+                                title.style.display = 'inline-block';
+                                title.style.visibility = 'visible';
+                                title.style.opacity = '1';
+                            });
+                            
+                            // Убеждаемся, что содержимое колонок видно и правильно выровнено
+                            var infoColumnContents = clonedDoc.querySelectorAll('.info-column-content');
+                            infoColumnContents.forEach(function(content) {
+                                content.style.display = 'block';
+                                content.style.visibility = 'visible';
+                                content.style.opacity = '1';
+                                content.style.textAlign = 'left';
+                                content.style.paddingLeft = '0';
+                                content.style.marginLeft = '0';
+                                
+                                // Убеждаемся, что все параграфы выровнены по левому краю
+                                var paragraphs = content.querySelectorAll('p');
+                                paragraphs.forEach(function(p) {
+                                    p.style.textAlign = 'left';
+                                    p.style.paddingLeft = '0';
+                                    p.style.marginLeft = '0';
+                                    p.style.textIndent = '0';
+                                    p.style.display = 'block';
+                                    p.style.marginTop = '0';
+                                    p.style.marginBottom = '4px';
+                                    
+                                    // Убеждаемся, что strong элементы тоже выровнены
+                                    var strongElements = p.querySelectorAll('strong');
+                                    strongElements.forEach(function(strong) {
+                                        strong.style.display = 'inline';
+                                        strong.style.textAlign = 'left';
+                                    });
+                                });
+                            });
+                            
+                            // Убеждаемся, что таблица плательщика правильно отображается
+                            var payerTable = clonedDoc.querySelector('.payer-table');
+                            if (payerTable) {
+                                payerTable.style.display = 'grid';
+                                payerTable.style.gridTemplateColumns = 'auto 1fr';
+                                payerTable.style.gap = '8px 15px';
+                                payerTable.style.fontSize = '0.8rem';
+                                payerTable.style.visibility = 'visible';
+                                payerTable.style.opacity = '1';
+                            }
+                            
+                            // Убеждаемся, что метки и значения плательщика видны
+                            var payerLabels = clonedDoc.querySelectorAll('.payer-label');
+                            payerLabels.forEach(function(label) {
+                                label.style.visibility = 'visible';
+                                label.style.opacity = '1';
+                            });
+                            
+                            var payerValues = clonedDoc.querySelectorAll('.payer-value');
+                            payerValues.forEach(function(value) {
+                                value.style.visibility = 'visible';
+                                value.style.opacity = '1';
+                            });
+                            
+                            // Скрываем footer в PDF (не нужен в документе)
+                            var footer = clonedDoc.querySelector('footer');
+                            if (footer) footer.style.display = 'none';
+                            
+                            // Скрываем toast уведомление
+                            var toast = clonedDoc.querySelector('#toast');
+                            if (toast) toast.style.display = 'none';
+
+                            // Убеждаемся, что ссылка видна
+                            var link = clonedDoc.querySelector('a[href*="external-payment"]');
+                            if (link) {
+                                link.style.color = '#0066cc';
+                                link.style.textDecoration = 'underline';
+                                link.style.display = 'inline';
+                                link.style.visibility = 'visible';
+                                link.style.opacity = '1';
+                            }
+
+                            // Убеждаемся, что изображения видны
+                            var allImages = clonedDoc.querySelectorAll('img');
+                            allImages.forEach(function(img) {
+                                img.style.display = 'block';
+                                img.style.maxWidth = '100%';
+                                if (!img.classList.contains('logo-img')) {
+                                    img.style.height = 'auto';
+                                }
+                            });
+
+                            // Уменьшаем размер логотипа в PDF
+                            var logoImg = clonedDoc.querySelector('.logo-img');
+                            if (logoImg) {
+                                logoImg.style.height = '35px';
+                                logoImg.style.width = 'auto';
+                                logoImg.style.maxWidth = '120px';
+                                logoImg.style.objectFit = 'contain';
+                                logoImg.style.display = 'block';
+                            }
+                        }
+                    },
+                    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                    pagebreak: { mode: ['css', 'legacy'] }
+                };
+                
+                // Конвертируем в PDF
+                await html2pdf().set(opt).from(element).save();
+                
+                // Удаляем временный элемент
+                document.body.removeChild(tempDiv);
+                
+            } catch (error) {
+                console.error('Ошибка при генерации PDF:', error);
+                alert('Произошла ошибка при генерации PDF. Попробуйте еще раз.');
+            } finally {
+                btn.disabled = false;
+                loading.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
