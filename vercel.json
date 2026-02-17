@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/twoFile/download-clone.html"
+    }
+  ]
+}
